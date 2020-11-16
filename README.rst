@@ -185,11 +185,71 @@ There are three categories of pointer registers.
 - Stack Pointer (SP)::
 
    16 bit SP register provides the offset value within the program stack.
-   SP in association with the SS register (as SS:SP) refers to be current 
+   SP in association with the SS register (as SS:SP) refers to be
+   current position of data or address within the program stack.
 
 - Base Pointer (BP)::
 
-   sd
+   16 bit BP register mainly helps in referencing the parameter variables passed to a subroutine.
+   The address in SS register is combined with the offset in BP to get the location of the parameter.
+   BP can also be combined with DI and SI as base register for special addressing.
+
+Index Registers
+^^^^^^^^^^^^^^^
+
+The 32-bit index registers ``ESI`` ``EDI`` and their 16-bit right portions, ``SI`` ``DI`` .
+They are used for indexed addressing and sometimes used in addtion and subtraction.
+
+- Source Index (SI)::
+
+   used as source index for string operations.
+
+- Destination Index (DI)::
+
+   used as destination index for string operations.
+
+Control Registers
+^^^^^^^^^^^^^^^^^
+
+32-bit instruction pointer register and 32-bit flags register combined are considerd as the control registers.
+
+Many instruction involve comparisons and mathematical calculation and change the status of the flags and
+some other conditional instructions test the value of these status flags to take the control flow to other location.
+
+Common flag bits are::
+
+   - Overflow Flag
+   - Direction FLag
+   - Interrupt Flag
+   - Trap Flag
+   - Sign Flag
+   - Zero Flag
+   - Auxiliary Carry Flag
+   - Parity Flag
+   - Carry Flag
+
+Segment Registers
+^^^^^^^^^^^^^^^^^
+
+Segments are specific areas defined in program for containing data, code, stack.
+THere are 3 of main segments
+
+- Code Segment: stores starting address of the code segment of program-file in memory.
+
+- Data Segment: stores startin address of the data segment of the program-file in memory.
+
+- Stack Segment::
+
+   it contains data and return addressed of procedures or subroutines.
+   it is implemented as a 'stack' data structure.
+   The stack Segment register or SS register stores the starting address of the stack.
+
+- ES, FS, GS: Extra segment 16-bits registers for provide additional segment for storing data.
+
+Segment registers stores the starting address of a segment.
+To get the exact location of data or instruction within segment and offset is required.
+To reference any memory location in a segment, processor combines it with an offset.
+
 
 inctructions
 ------------
