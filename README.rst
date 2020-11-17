@@ -250,6 +250,57 @@ Segment registers stores the starting address of a segment.
 To get the exact location of data or instruction within segment and offset is required.
 To reference any memory location in a segment, processor combines it with an offset.
 
+Variables
+---------
+
+There are few *define directives* for reserving storage space for variable.
+It is used for allocation of storage space.
+
+Allocating Storage Space for initialized Data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+SYNTAX
+   ``[variable-name]    define-directive    initial-value   [,initial-value]...``
+
+Assembler associates an offset value for each vaiable name defined in the data segment.
+
+=========       ==========     ==============
+directive       purpose        storeage space
+=========       ==========     ==============
+DB              byte           alloc 1 bytes
+DW              word           alloc 2 bytes
+DD              doubleword     alloc 4 bytes
+DQ              quadword       alloc 8 bytes
+DT              ten bytes      alloc 10 bytes
+=========       ===========    ==============
+
+.. note::
+
+   - Each byte of char is stored as ACII value in hex.
+   - Each decimal value is automatically converted to its 16-bit binary equals and stored as hex-number.
+   - Processor uses the littel endian byte ordering.
+   - Negative numbers are convertied to its 2's complement representation.
+   - Short and long float-point numbers are represented using 32 or 64 bits.
+
+Allocating Storage Space for Uninitialized Data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The reserve directives are used for reserving space for uninitialized data.
+The reserver directives take single operand that specific the number of units of space to be reserved.
+
+=========       ==========
+directive       purpose   
+=========       ==========
+RESB            byte     
+RESW            word     
+RESD            doubleword
+RESQ            quadword 
+REST            ten bytess
+=========       ==========
+
+.. note::
+
+   Reseve directive does not Actually allocate Storage before initializing.
 
 inctructions
 ------------
