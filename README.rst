@@ -6,6 +6,10 @@ libasm
 intro
 -----
 
+**Source from tutorialspoint-assembly**
+
+https://www.tutorialspoint.com/assembly_programming
+
 Assembly language has very strong correspndence between
 the architecture's machine code instructions.
 Each assembly language is specific to a particular computer architecture.
