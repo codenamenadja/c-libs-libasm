@@ -181,7 +181,6 @@ There are three categories of pointer registers.
    16 bit IP regitser store the offset address of the next instruction to be executed.
    IP in association with the CS register (as CS:IP) gives the complete address of the current instruction in the code segment.
 
-
 - Stack Pointer (SP)::
 
    16 bit SP register provides the offset value within the program stack.
@@ -282,8 +281,16 @@ DT              ten bytes      alloc 10 bytes
    - Negative numbers are convertied to its 2's complement representation.
    - Short and long float-point numbers are represented using 32 or 64 bits.
 
+String and Array
+^^^^^^^^^^^^^^^^
+
+``NUMBERS DW    34, 45, 56, 67, 75``
+
+Above definition declares array of 5-words and allocates 2x5 = 10 bytes of consecutive memspace.
+THe symbloic address of first number will be NUMBES and that of the second numbers will be NUMBERS + 2 and so on.
+
 Allocating Storage Space for Uninitialized Data
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------------------------
 
 The reserve directives are used for reserving space for uninitialized data.
 The reserver directives take single operand that specific the number of units of space to be reserved.
@@ -302,9 +309,147 @@ REST            ten bytess
 
    Reseve directive does not Actually allocate Storage before initializing.
 
-inctructions
-------------
+Procedures
+----------
 
+.. code-block:: asm
+
+   proc_name:
+       procedure body
+       ...
+       ret
+
+The procedure is called from another function by using the ``CALL`` instructiojn.
+The called procedures returns the control to the calling procedure by using the RET instrunction.
+
+Stack Data structure
+--------------------
+
+Assembly language provides two instructions for stack operation::
+
+   - PUSH: operand
+   - POP: address/register
+
+The memory space reserved in the stack segment is used for implementing stack.
+The register ``SS, ESP(or SP)`` are used for implementing stack.
+The top of the stack is pointed to by the ``SS:ESP`` register,
+SS points begining of the stack and SP(or ESP) gives the offset into the stack seg.
+
+charateristics of the stack implementation::
+
+   - only words or doublewords(4byte) could be saved into the stack, not a byte.
+   - the stack grows in the reverdirection, toward the lower memory address.
+   - top of the tack points last item instead, it points th the lower byte of the last word inserted.
+
+.. code-block:: asm
+
+   ; save the AS and BX registers into stack
+   PUSH     AX
+   PUSH     BX
+
+   ; Use the register for other purpose
+   MOV      AX, VALUE1
+   MOV      BX, VALUE2
+   ...
+   MOV      VALUE1, AX
+   MOV      VALUE2, BX
+
+   ; Restore the original values
+   POP      BX
+   POP      AX
+
+macros
+------
+
+Writing macro is another way of ensuring moudular programming in assembly language::
+
+   - macro in sequence of instructions, assigned by name and could be used anywhere in the program.
+   - in NASM, macros are defined with ``%macro`` and ``%endmacro`` directives.
+
+.. code-block:: asm
+
+   %macro macro_name    number_of_params
+   <macro body>
+   %endmacro
+
+where *number_of_params* specifies the number parameters,
+*macro_name* specifies the name of the macro.
+
+The macro is invoked by using macro_name along necessary parameters.
+
+.. code-block:: asm
+
+   %macro write_string  2
+       MOV  EAX, 4
+       MOV  EBX, 1
+       MOV  ECX, %1
+       MOV  EDX, %2
+       INT  0x80
+   %endmacro
+
+   section .text
+       global _start
+
+   _start:
+       write_string msg, msg-len
+       INT          0x80
+   ...
+
+
+File handling
+-------------
+
+System considers anyinput or output data as stream of bytes. there are three standard file streams::
+
+   - stdin  (fd:0)
+   - stdout (fd:1)
+   - stderr (fd:2)
+
+File decriptor
+^^^^^^^^^^^^^^
+
+A file descriptor is 16-bit integer assigned to a file as a file id.
+When a new file is created or an existing file is opened,
+the file descriptor is used for accessing the file
+
+File Pointer
+^^^^^^^^^^^^
+
+file pointer specifies the location for subsequent read/write operation in the file in terms of bytes.
+Each file is considered as a sequence of bytes.
+Each open file is associated with a file pointer that specifies an offset in bytes ,relative to the begining of the file.
+When a file is opened, the file pointer is set to zero.
+
+File syscalls
+^^^^^^^^^^^^^
+
+====    ==========  ================    ============    ============
+%eax    Name        %ebx                %ecx            %edx    
+====    ==========  ================    ============    ============
+2       sys_fork    struct pt_regs      -               -
+3       sys_read    unsigned int        char *          size_t
+4       sys_write   unsigned int        const char *    size_t
+5       sys_open    const char *        int             int
+6       sys_close   unsigned int        -               -
+8       sys_creat   const char *        int             -
+19      sys_lseek   unsigned int        off_t           unsigned int
+====    ==========  ================    ============    ============
+
+Memory management
+-----------------
+
+The ``sys_brk()`` syscall is provided by the kernel, to allocate memory without the need of moving it later.
+This call allocates memory reight behind the application image in the memory.
+This system fuinction allow you to set the highest available address is data section.
+
+This sys call takes one param.
+it is the highest memory address needed to be set.
+this value is stored in the ebx register.
+
+in case of any error, ``sys_brk()`` returns -1 or returns the negative error code itself.
+
+inctructions
+------------ 
 - must write 64 bits ASM. Beware of "calling convention".
 - can't do inline ASM, must do '.s' files.
 - compile asm code with *nasm.*
