@@ -3,117 +3,114 @@ libasm
 
 [SOURCE]: https://github.com/codenamenadja/c-libs-asm
 
-intro
------
+x86-64 Registers
+----------------
 
-**Source from tutorialspoint-assembly**
+16 of 64-bit registers available
 
-https://www.tutorialspoint.com/assembly_programming
+caller-save register
+   not necessarily saved across function calls.
+   function caller: caller(me)
 
-Assembly language has very strong correspndence between
-the architecture's machine code instructions.
-Each assembly language is specific to a particular computer architecture.
-Assembly language may also be called *symbolic machine-code.*
+callee-save register
+   saved across function calls.
+   function called: callee(function)
 
-Assembly language programs consist of three types of statments::
+- ``%rax`` : caller-save register, function return store register.
+- ``%rbx`` : *callee-save* register,
+- ``%rcx`` : caller-save register,
+- ``%rdx`` : caller-save register,
+- ``%rdi`` : caller-save register,
+- ``%rsi`` : caller-save register,
+- ``%rbp`` : *callee-save* register, stack pointer(was base stack pointer in 32bit x86, higher)
+- ``%rsp`` : caller-save register, stack pointer(topmost stack pointer, lower)
+- ``%r8`` ~ ``%r11`` : caller-save register,
+- ``%r12`` ~ ``%r15`` : *callee-save* register,
 
-   - Executable instructions, or instructions.
-   - Assembler directives or pseudo-ops.
-   - Macros
+.. note::
 
-*executable instructions* or simple *instructions* tell the processor what to do.
-Each instruction consists of an *operation code(opcode).*
+   With the advant of the 64-bit architecture,
+   this only save for a few special cases when the compiler cannot determine
+   ahead of time how much stack pace needs to be allocated for particular function.
 
-The *assembler directives* or *pseudo-ops* tell teh assmebler about the
-various aspects of the assmbly process.
-Theses are non-executable and do not generate machine language instructions.
+RAX
+   - Accumulator since it was used by a number of arithmetic operations
+   - Temporary Register (syscall)
 
-*Macros* are basically a text subtitution mechanism.
+RCX
+   Counter since it was used to hold a loop index
 
-"Hello world!" program for 64 bit linux nasm style assembly
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+calling functions
+^^^^^^^^^^^^^^^^^
 
-.. code-block:: asm
-
-   ;  build: nasm -f elf64 -F dwarf hello.asm
-   ;  link:  ld -o hello hello.o
-
-   DEFAULT REL			; use RIP-relative addressing modes by default, so [foo] = [rel foo]
-
-   SECTION .rodata			; read-only data can go in the .rodata section on GNU/Linux, like .rdata on Windows
-   Hello:		db "Hello world!",10        ; 10 = `\n`.
-   len_Hello:	equ $-Hello                 ; get NASM to calculate the length as an assemble-time constant
-   ;;  write() takes a length so a 0-terminated C-style string isn't needed. It would be for puts
-
-   SECTION .text
-
-   global _start
-   _start:
-       mov eax, 1				; __NR_write syscall number from Linux asm/unistd_64.h (x86_64)
-       mov edi, 1				; int fd = STDOUT_FILENO
-       lea rsi, [rel Hello]			; x86-64 uses RIP-relative LEA to put static addresses into regs
-       mov rdx, len_Hello		; size_t count = len_Hello
-       syscall					; write(1, Hello, len_Hello);  call into the kernel to actually do the system call
-   ;; return value in RAX.  RCX and R11 are also overwritten by syscall
-
-       mov eax, 60				; __NR_exit call number (x86_64)
-       xor edi, edi				; status = 0 (exit normally)
-       syscall					; _exit(0)
-
-
-Section
--------
-
-data section
-^^^^^^^^^^^^
-
-``section.data``
-
-``data`` section is used for declaring initialized data or constants.
-this data does not chage at runtime.
-can declare various constant values, filenames, buffer size, etc.
-
-bss section
-^^^^^^^^^^^
-
-``section.bss``
-
-``bss`` section is used for declaring variables.
-
-text section
-^^^^^^^^^^^^
+To call a function, the program should place the first six integer or pointer params
+in the registers ``%rdi, %rsi, %rdx, %rcs, %r8, %r9``
+subsequent params or params larger than 64 bits sould be pushed onto the stack.
 
 .. code-block:: asm
 
-   section.text
-       global _start
-   _start:
+   ;Call foo(1, 15)
+   movq $1, %rdi    ; caller save register, mov quad words(8byte) integer to rdi
+   movq $15, %rsi   ; caller save register, same as upper
+   call foo
 
-``text`` section is used for keeping the actual code.
-must begin with the declaration ``global _start`` ,
-which tells the kernel where the program execution begins.
+writing function
+^^^^^^^^^^^^^^^^
 
-Syntax of Assembly language statements
---------------------------------------
+1. **setup:** ``call`` (save call instruction address to be return of ret)::
 
-statements are entered one statement per line, in format::
+   When a ``call`` instruction is executed, the address of the following instruction is
+   pushed onto the stack as the retuns address and control passes to the specified function.
 
-   ``[label]    mnemonic    [operands]  [;comment]``
+2. callee(function) registers expected to use in function, saves to stack for restoring.::
+   
+   Pushq    %rbx
+   pushq    %r12
+   pushq    %r13
 
-square brakets are optionals.
-default instructions has two parts::
+3. **use stack frame:**  additional space may be allocated on the stack *for local variables.*
+   it possible to make space on the stack as needed in a function body,
+   but generally more efficient to allocate this space all at once at the function beginning.
+   This accomplished by ``subq %N, %rsp`` N is size of callee's stck frame::
 
-   1. name of the instruction(mnemonic).
-   2. operands or parameters of the command.
+      ``subq   $0x18, %rsp; allocate 24bytes of space(local variable) on the stack``
+
+   rsp is caller save stack pointer, topmost lowest address
+
+4. **clean up:** First, the callee frees the stack spce it allocated by adding the same amount to stack pointer.
+   after function body fin and return value placed in %rax,
+   function must return control to the caller,
+   putting the stack back in the state in which it was called with::
+
+      ``addq    $0x18, $rsp; Give back 24 bytes of stack space``
+
+5. pops off the registers is saved ealier::
+
+   popq %r13
+   popq %r12
+   popq $rbx
+
+6. program should return to call site, using ret instruction.::
+
+   ret
 
 .. code-block:: asm
 
-   INC  COUNT       ; Increment the memory variable COUNT
-   MOV  TOTAL, 48   ; Tranfer the value 48 -> memory variable TOTAL
-   ADD  AH, BH      ; Add the content of the BH register into the AH register
-   AND  MASK1, 128  ; Perforem AND operation on the variable MASK1 and 128
-   ADD  MARKS, 10   ; Add 10 to variable MARKS
-   MOV  AL, 10      ; transfer the value 10 to the AL register
+   foo:
+
+        pushq   %rbx        ;save return address
+        pushq   %r12
+        pushq   %r13
+        subq    $0x18, $rsp
+
+        ;Function body start
+        ;...
+        ;Function body end
+
+        addq    $0x18, $rsp
+        popq    %r13        ;restore registers
+        popq    %r13
+        popq    %rbx ret    ;pop return address and return control to caller
 
 Registers
 ---------
@@ -313,19 +310,6 @@ REST            ten bytess
 
    Reseve directive does not Actually allocate Storage before initializing.
 
-Procedures
-----------
-
-.. code-block:: asm
-
-   proc_name:
-       procedure body
-       ...
-       ret
-
-The procedure is called from another function by using the ``CALL`` instructiojn.
-The called procedures returns the control to the calling procedure by using the RET instrunction.
-
 Stack Data structure
 --------------------
 
@@ -439,19 +423,6 @@ File syscalls
 19      sys_lseek   unsigned int        off_t           unsigned int
 ====    ==========  ================    ============    ============
 
-Memory management
------------------
-
-The ``sys_brk()`` syscall is provided by the kernel, to allocate memory without the need of moving it later.
-This call allocates memory reight behind the application image in the memory.
-This system fuinction allow you to set the highest available address is data section.
-
-This sys call takes one param.
-it is the highest memory address needed to be set.
-this value is stored in the ebx register.
-
-in case of any error, ``sys_brk()`` returns -1 or returns the negative error code itself.
-
 inctructions
 ------------ 
 - must write 64 bits ASM. Beware of "calling convention".
@@ -461,7 +432,7 @@ inctructions
 
 library must be called libasm.a
 
-- ft_strlen
+- ft_strlen 
 - ft_strcpy
 - ft_strcmp
 - ft_write
@@ -472,4 +443,5 @@ must set the variable errno properly
 for that, it is allowed to call ``extern __error``
 
 bonus
+
 
