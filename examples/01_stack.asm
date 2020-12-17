@@ -37,6 +37,14 @@ argcError:
         syscall
         jmp         exit
 
+strlen:
+        xor rcx rcx
+loop:
+        cmp [rsi + rcx], byte 0
+        je found
+        inc rcx
+        jmp loop
+
 str_to_int:
         xor         rax, rax        ; set rax to 0
         mov         rcx, 10         ; set rcx to 10
