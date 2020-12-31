@@ -1,3 +1,8 @@
+**tutorial reference**
+
+- https://0xax.github.io/
+- https://tutorialspoint.com/assembly_programming/
+
 x86-64 Registers
 ================
 
