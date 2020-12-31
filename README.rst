@@ -12,11 +12,11 @@ tutorial lists
 - ** 05_: inline_asm_in_c/asm expression in C program**
 - ** 06_: call_c_in_asm/asm call C function**
 
-.. _01: tutorial/01_string_operations
-.. _02: tutorial/02_macros
-.. _04: tutorial/04_run_with_c
-.. _05: tutorial/05_inline_asm_in_c
-.. _06: tutorial/06_call_c_in_asm
+.. _01: tutorials/01_string_operations
+.. _02: tree/main/tutorial/02_macros
+.. _04: tree/main/tutorial/04_run_with_c
+.. _05: tree/main/tutorial/05_inline_asm_in_c
+.. _06: tree/main/tutorial/06_call_c_in_asm
 
 inctructions
 ------------ 
