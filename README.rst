@@ -36,3 +36,22 @@ library must be called libasm.a
 
 must set the variable errno properly
 for that, it is allowed to call ``extern __error``
+
+functions
+---------
+
+``ft_strlen``::
+
+   - DESC: increases counter register, and cmp ``[rdi + rcx]``
+   - RETURNS:
+       - success: index of null-termination from ``rcx``
+       - failure: no failure exception.
+
+``ft_strcpy``::
+
+   - DESC: using ``lodsb``, push src to stack loop -> pop loop.
+   - RETURNS:
+       - success: poped rdi include null-termination.
+       - failure: no failure, 
+   - *if null first found in dst? recapture src to buffer and copies.*
+   - copie using stack, if 0 in to dst? re capture stack from src for rcx left.
