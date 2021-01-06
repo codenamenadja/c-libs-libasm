@@ -1,8 +1,8 @@
 CC				= gcc
 CFLAGS			= -Werror -Wall -Wextra -Iinclude -g
 SRC				= src/main.c
-OBJECTS			= src/ft_strlen.o src/ft_strcpy.o \
-				src/ft_strcmp.o
+OBJECTS			= src/ft_strlen.o src/ft_strcpy.o src/ft_strcmp.o \
+				src/ft_write.o src/ft_read.o
 NAME			= run.out
 .DEFAULT_GOAL	:= all
 
@@ -24,6 +24,11 @@ src/ft_strcpy.o:
 src/ft_strcmp.o:
 	nasm -g -f elf64 -o src/ft_strcmp.o src/ft_strcmp.asm
 
+src/ft_write.o:
+	nasm -g -f elf64 -o src/ft_write.o src/ft_write.asm
+
+src/ft_read.o:
+	nasm -g -f elf64 -o src/ft_read.o src/ft_read.asm
 
 clean:
 	/bin/rm $(OBJECTS) $(NAME) ./include/libft_asm.a
