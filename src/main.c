@@ -23,6 +23,13 @@ int main(void)
     printf("%s\n", dest);
     printf("%s\n", ret);
     free(src);
+
+    const char *cmp_dest = "origin\0";
+    const char *cmp_src = "origim\0";
+    int         cmp_ret;
+    cmp_ret = ft_strcmp(cmp_dest, cmp_src);
+
+    printf("cmp_ret:%d\n", cmp_ret);
     return (0);
 }
 /*

@@ -55,3 +55,11 @@ functions
        - failure: no failure, 
    - *if null first found in dst? recapture src to buffer and copies.*
    - copie using stack, if 0 in to dst? re capture stack from src for rcx left.
+
+``ft_strcmp``::
+
+   - DESC: compare with using rdi-bl, rsi-al cmp with increment registers.
+   - RETURNS:
+       - success: integer of diff from ``[rdi] - [rsi]`` to rax.
+       - failure: no failure exception.
+
